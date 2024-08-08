@@ -16,6 +16,7 @@
     "@fullcalendar/list": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@fullcalendar/vue3": "^6.1.15",
+    "moment": "^2.30.1",
     "vue": "^3.4.29",
     "vuex": "^4.1.0"
   },
