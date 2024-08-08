@@ -4,23 +4,102 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import TimegridPlugin from '@fullcalendar/timegrid'
 import InteractionPlugin from '@fullcalendar/interaction'
 import ListPlugin from '@fullcalendar/list'
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
+import MyModal from './MyModal.vue';
+// console.log('1er carga ' + String(Date()));
 
 const events = ref([
-    // You can optionally put your initial events here
-    { title: 'Meeting', start: new Date() }
+    {
+        id: "001",
+        title: 'Evento importante',
+        start: '2024-08-19T09:00:00',
+        backgroundColor: 'red',
+        borderColor: 'black',
+        textColor: 'white'
+    },
+    {
+        id: "002",
+        title: 'Evento importante',
+        start: '2024-08-20T09:00:00',
+        backgroundColor: 'red',
+        borderColor: 'black',
+        textColor: 'white'
+    },
+    {
+        id: "003",
+        title: 'Evento importante',
+        start: '2024-08-23T09:00:00',
+        backgroundColor: 'red',
+        borderColor: 'black',
+        textColor: 'white'
+    },
 ])
-const handleEventClick = (info) => {
-    console.log('Event clicked:', info.event);
-};
-const handleDateClick = (info) => {
-    console.log('Click on: ', info.dateStr);
-    console.log('All day: ', info.allDay);
-    console.log('View type: ', info.view.type);
+const showModal = ref(false);
+const selectedDate = ref(null);
+const calendar = ref(null);
+
+// Función para determinar el color del evento
+const eventColorCheck = (startDate) => {
+    if (new Date() > new Date(startDate)) {
+        return 'red'; // Evento pasado
+    } else if (new Date().getDate() === new Date(startDate).getDate()) {
+        return 'orange'; // Evento hoy
+    } else {
+        return 'blue'; // Evento futuro
+    }
+}
+
+// Función para actualizar los eventos con el color correspondiente
+const updateEventColors = (events) => {
+    events.forEach(event => {
+        event.color = eventColorCheck(event.start);
+    });
 };
 
-const calendarOptions = ref({
-    // ... other options
+
+
+const handleEventClick = (info) => {
+    const eventId = info.event.id;
+    const index = events.value.findIndex(event => event.id === eventId);
+    console.log(eventId);
+    console.log(index);
+
+
+    if (index !== -1) {
+        events.value.splice(index, 1);
+    }
+    console.log(events.value);
+
+
+    /* if (confirm("¿Estás seguro de que deseas eliminar este evento?")) {
+        const eventId = info.event.id;
+        const index = events.value.findIndex(event => event.id === eventId);
+        if (index !== -1) {
+            events.value.splice(index, 1);
+        }
+
+    } else {
+        // El usuario canceló la eliminación
+        console.log("Eliminación cancelada");
+    } */
+};
+
+const saveEvent = (eventData) => {
+    if (eventData.title.length > 3 && eventData.start !== null) {
+        // Aquí agregarías el nuevo evento a tu lista de eventos y lo guardarías en la base de datos si es necesario
+        events.value.push({
+            title: eventData.title,
+            start: eventData.start,
+            id: String(Date())
+            // ... otras propiedades
+        });
+        showModal.value = false;
+    } else {
+        alert("Debe completar todos los campos")
+    }
+};
+
+const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, TimegridPlugin, InteractionPlugin, ListPlugin],
     initialView: 'dayGridMonth',
     weekends: true,
@@ -28,18 +107,8 @@ const calendarOptions = ref({
     locale: 'es-ES',
     selectable: true,
     editable: true,
-    eventAdd: (info) => {
-        createEvent(info.event)
-    },
-    eventDrop: (info) => {
-        updateEvent(info.event)
-    },
-    eventResize: (info) => {
-        updateEvent(info.event)
-    },
-    eventRemove: (info) => {
-        deleteEvent(info.event.id)
-    },
+    eventClick: handleEventClick,
+    eventColor: '#378006',
     headerToolbar: {
         left: "title",
         right: "prev today next",
@@ -53,8 +122,33 @@ const calendarOptions = ref({
         month: "Mes",
         week: "Semana"
     },
-    height: "80vh"
-})
+    height: "80vh",
+    events: events.value.map(event => {
+        event.color = eventColorCheck(event.start);
+        return event;
+    }),
+    dateClick: (info) => {
+        if (info.view.type === 'dayGridMonth') {
+            // console.log('es vista de mes ');
+            info.view.calendar.changeView('timeGridDay', info.dateStr);
+        } else {
+            selectedDate.value = info.date;
+            showModal.value = true; // Set showModal after setting selectedDate
+        }
+    },
+    /*  eventAdd: (info) => {
+         createEvent(info.event)
+     },
+     eventDrop: (info) => {
+         updateEvent(info.event)
+     },
+     eventResize: (info) => {
+         updateEvent(info.event)
+     },
+     eventRemove: (info) => {
+         deleteEvent(info.event.id)
+     } */
+}))
 
 // Simulación de las funciones de la API
 function createEvent(event) {
@@ -78,15 +172,20 @@ function deleteEvent(eventId) {
     // Por ahora, simplemente eliminamos el evento del arreglo local
     events.value = events.value.filter(e => e.id !== eventId)
 }
+/* watch(selectedDate, (newValue) => {
+    if (newValue) {
+        showModal.value = true;
+    }
+}); */
+
 </script>
 
 <template>
     <h1>Demo App</h1>
-    <FullCalendar :options='calendarOptions' @eventClick="handleEventClick" @dateClick="handleDateClick">
-        <template v-slot:eventContent='arg'>
-            {{ arg.event.title }}
-        </template>
-    </FullCalendar>
+    <FullCalendar :options="calendarOptions" />
+    <MyModal v-if="showModal" :eventDate="selectedDate" @save="saveEvent" />
+
+
 </template>
 
 <style></style>
