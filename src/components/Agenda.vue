@@ -6,7 +6,7 @@ import InteractionPlugin from '@fullcalendar/interaction'
 import ListPlugin from '@fullcalendar/list'
 import { ref, computed, watch } from 'vue'
 import MyModal from './MyModal.vue';
-// console.log('1er carga ' + String(Date()));
+import EventDetails from './EventDetails.vue'
 
 const events = ref([
     {
@@ -35,8 +35,10 @@ const events = ref([
     },
 ])
 const showModal = ref(false);
+const showEventModal = ref(false);
 const selectedDate = ref(null);
-const calendar = ref(null);
+const selectedEvent = ref(null);
+
 
 // Función para determinar el color del evento
 const eventColorCheck = (startDate) => {
@@ -50,28 +52,17 @@ const eventColorCheck = (startDate) => {
 }
 
 // Función para actualizar los eventos con el color correspondiente
-const updateEventColors = (events) => {
+/* const updateEventColors = (events) => {
     events.forEach(event => {
         event.color = eventColorCheck(event.start);
     });
-};
+}; */
 
 
 
 const handleEventClick = (info) => {
-    const eventId = info.event.id;
-    const index = events.value.findIndex(event => event.id === eventId);
-    console.log(eventId);
-    console.log(index);
-
-
-    if (index !== -1) {
-        events.value.splice(index, 1);
-    }
-    console.log(events.value);
-
-
-    /* if (confirm("¿Estás seguro de que deseas eliminar este evento?")) {
+    //codigo anterior
+    /*  if (confirm("¿Estás seguro de que deseas eliminar este evento?")) {
         const eventId = info.event.id;
         const index = events.value.findIndex(event => event.id === eventId);
         if (index !== -1) {
@@ -79,14 +70,16 @@ const handleEventClick = (info) => {
         }
 
     } else {
-        // El usuario canceló la eliminación
+        alert("Eliminación cancelada")
         console.log("Eliminación cancelada");
     } */
+    selectedEvent.value = info.event
+    showEventModal.value = true
 };
 
-const saveEvent = (eventData) => {
+const saveEventLocal = (eventData) => {
     if (eventData.title.length > 3 && eventData.start !== null) {
-        // Aquí agregarías el nuevo evento a tu lista de eventos y lo guardarías en la base de datos si es necesario
+        // Aquí agregarías el nuevo evento a tu lista de eventos y lo guardarías en la base de datos si es necesariLocalo
         events.value.push({
             title: eventData.title,
             start: eventData.start,
@@ -94,6 +87,22 @@ const saveEvent = (eventData) => {
             // ... otras propiedades
         });
         showModal.value = false;
+        console.log(events.value)
+    } else {
+        alert("Debe completar todos los campos")
+    }
+};
+const updateEventLocal = (eventData) => {
+    if (eventData.title.length > 3 && eventData.start !== null) {
+        // Aquí agregarías el nuevo evento a tu lista de eventos y lo guardarías en la base de datos si es necesariLocalo
+        events.value.push({
+            title: eventData.title,
+            start: eventData.start,
+            id: String(Date())
+            // ... otras propiedades
+        });
+        showModal.value = false;
+        console.log(events.value)
     } else {
         alert("Debe completar todos los campos")
     }
@@ -128,11 +137,12 @@ const calendarOptions = computed(() => ({
         return event;
     }),
     dateClick: (info) => {
+
         if (info.view.type === 'dayGridMonth') {
             // console.log('es vista de mes ');
             info.view.calendar.changeView('timeGridDay', info.dateStr);
         } else {
-            selectedDate.value = info.date;
+            selectedDate.value = info;
             showModal.value = true; // Set showModal after setting selectedDate
         }
     },
@@ -151,7 +161,7 @@ const calendarOptions = computed(() => ({
 }))
 
 // Simulación de las funciones de la API
-function createEvent(event) {
+/* function createEvent(event) {
     // Aquí iría la lógica para enviar el evento a la API
     // Por ahora, simplemente agregamos el evento al arreglo local
     event.id = Date.now() // Asigna un ID único
@@ -172,20 +182,22 @@ function deleteEvent(eventId) {
     // Por ahora, simplemente eliminamos el evento del arreglo local
     events.value = events.value.filter(e => e.id !== eventId)
 }
-/* watch(selectedDate, (newValue) => {
-    if (newValue) {
-        showModal.value = true;
-    }
-}); */
+*/
+
+const handleCancelModal = () => {
+    showModal.value = false
+    showEventModal.value = false
+}
 
 </script>
 
 <template>
     <h1>Demo App</h1>
     <FullCalendar :options="calendarOptions" />
-    <MyModal v-if="showModal" :eventDate="selectedDate" @save="saveEvent" />
-
-
+    <MyModal v-if="showModal" :eventInfo="selectedDate" :modalProp="showModal" @save="saveEventLocal"
+        @cancel="handleCancelModal" />
+    <EventDetails v-if="showEventModal" :eventInfo="selectedEvent" :modalProp="showEventModal"
+        @update="updateEventLocal" @cancel="handleCancelModal" />
 </template>
 
 <style></style>
