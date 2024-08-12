@@ -9,6 +9,7 @@
             <input type="datetime-local" v-model="eventStart" id="fechaInput">
             <div class="btn-container">
                 <button @click="$emit('update', { title: eventTitle, start: eventStart })">Guardar</button>
+                <button @click="$emit('delete', { title: eventTitle, start: eventStart })">Eliminar</button>
                 <button @click="$emit('cancel')" id="cancelBtn">❌</button>
             </div>
         </div>
