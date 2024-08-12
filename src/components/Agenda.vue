@@ -6,35 +6,23 @@ import InteractionPlugin, { Draggable } from '@fullcalendar/interaction'
 import ListPlugin from '@fullcalendar/list'
 import { ref, computed, watch } from 'vue'
 import MyModal from './MyModal.vue';
+/* @ts-ignore */
 import EventDetails from './EventDetails.vue'
+import axios from 'axios'
 
-const events = ref([
-    {
-        id: "001",
-        title: 'Evento Actual',
-        start: new Date(Date.now() + 3600000),
-        end: new Date(Date.now() + 259200000),
-    },
-    {
-        id: "002",
-        title: 'Evento Vencido',
-        start: new Date(Date.now() - 259200000),
-        end: new Date(Date.now() - 209200000),
-    },
-    {
-        id: "003",
-        title: 'Evento Futuro',
-        start: new Date(Date.now() + 209200000),
-        end: new Date(Date.now() + 259200000),
-    },
-    {
-        id: "004",
-        title: 'Evento individual',
-        start: new Date(Date.now() + 259200000 + 259200000),
-        end: '',
+const events = ref([])
+
+const axiosEvents = async () => {
+    try {
+        const response = await axios('http://localhost:3000/events')
+        console.log(response);
+        events.value = response.data
+        console.log(events.value);
+    } catch (error) {
+        console.error(error);
     }
-
-])
+}
+axiosEvents()
 const showModal = ref(false);
 const showEventModal = ref(false);
 const selectedDate = ref(null);
@@ -130,16 +118,17 @@ const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, TimegridPlugin, InteractionPlugin, ListPlugin],
     initialView: 'dayGridMonth',
     weekends: true,
-    initialEvents: events.value.map(event => {
+    /* initialEvents: events.value.map(event => {
         event.color = eventColorCheck(event.start);
         return event;
-    }),
+    }), */
+    initialEvents: events.value,
     locale: 'es-ES',
     selectable: true,
     editable: false,
     eventClick: handleEventClick,
     eventColor: '#378006',
-
+    events: events.value,
     headerToolbar: {
         left: "title",
         right: "prev today next",
@@ -223,3 +212,36 @@ h1 {
     text-decoration: underline;
 }
 </style>
+
+
+
+
+<!-- 
+[
+    {
+        id: "001",
+        title: 'Evento Actual',
+        start: new Date(Date.now() + 3600000),
+        end: new Date(Date.now() + 259200000),
+    },
+    {
+        id: "002",
+        title: 'Evento Vencido',
+        start: new Date(Date.now() - 259200000),
+        end: new Date(Date.now() - 209200000),
+    },
+    {
+        id: "003",
+        title: 'Evento Futuro',
+        start: new Date(Date.now() + 209200000),
+        end: new Date(Date.now() + 259200000),
+    },
+    {
+        id: "004",
+        title: 'Evento individual',
+        start: new Date(Date.now() + 259200000 + 259200000),
+        end: '',
+    }
+
+]
+ -->
