@@ -11,28 +11,29 @@ import EventDetails from './EventDetails.vue'
 const events = ref([
     {
         id: "001",
-        title: 'Evento importante',
-        start: '2024-08-19T09:00:00',
-        backgroundColor: 'red',
-        borderColor: 'black',
-        textColor: 'white'
+        title: 'Evento Actual',
+        start: new Date(Date.now() + 3600000),
+        end: new Date(Date.now() + 259200000),
     },
     {
         id: "002",
-        title: 'Evento importante',
-        start: '2024-08-20T09:00:00',
-        backgroundColor: 'red',
-        borderColor: 'black',
-        textColor: 'white'
+        title: 'Evento Vencido',
+        start: new Date(Date.now() - 259200000),
+        end: new Date(Date.now() - 209200000),
     },
     {
         id: "003",
-        title: 'Evento importante',
-        start: '2024-08-23T09:00:00',
-        backgroundColor: 'red',
-        borderColor: 'black',
-        textColor: 'white'
+        title: 'Evento Futuro',
+        start: new Date(Date.now() + 209200000),
+        end: new Date(Date.now() + 259200000),
     },
+    {
+        id: "004",
+        title: 'Evento individual',
+        start: new Date(Date.now() + 259200000 + 259200000),
+        end: '',
+    }
+
 ])
 const showModal = ref(false);
 const showEventModal = ref(false);
@@ -42,7 +43,9 @@ const selectedEvent = ref(null);
 
 // Función para determinar el color del evento
 const eventColorCheck = (startDate) => {
-    if (new Date() > new Date(startDate)) {
+    const startDateFormatted = new Date(startDate)
+    console.log(Date.now() > startDateFormatted.getTime());
+    if (Date.now() > startDateFormatted.getTime()) {
         return 'red'; // Evento pasado
     } else if (new Date().getDate() === new Date(startDate).getDate()) {
         return 'orange'; // Evento hoy
@@ -127,7 +130,10 @@ const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, TimegridPlugin, InteractionPlugin, ListPlugin],
     initialView: 'dayGridMonth',
     weekends: true,
-    events: events.value,
+    initialEvents: events.value.map(event => {
+        event.color = eventColorCheck(event.start);
+        return event;
+    }),
     locale: 'es-ES',
     selectable: true,
     editable: false,
@@ -148,10 +154,6 @@ const calendarOptions = computed(() => ({
         week: "Semana"
     },
     height: "80vh",
-    events: events.value.map(event => {
-        event.color = eventColorCheck(event.start);
-        return event;
-    }),
     dateClick: (info) => {
 
         if (info.view.type === 'dayGridMonth') {
