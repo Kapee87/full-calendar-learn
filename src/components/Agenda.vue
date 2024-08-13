@@ -11,13 +11,12 @@ import EventDetails from './EventDetails.vue'
 import axios from 'axios'
 
 const events = ref([])
+const apiUrl = 'http://localhost:3000'
 
 const axiosEvents = async () => {
     try {
-        const response = await axios('http://localhost:3000/events')
-        console.log(response);
+        const response = await axios(apiUrl + '/events')
         events.value = response.data
-        console.log(events.value);
     } catch (error) {
         console.error(error);
     }
