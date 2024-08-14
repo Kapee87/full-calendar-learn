@@ -1,15 +1,18 @@
 <template>
     <div class="modal">
         <div class="modal-box">
-            <label for="">Nombre: </label>
-            <input v-model="eventData.title" placeholder="Título del evento">
-            <label for="">Descripcion:
+            <label for="">Nombre:
+                <input v-model="eventData.title" placeholder="Título del evento">
             </label>
-            <input v-model="eventData.description" placeholder="Descripción">
-            <label for="">Inicio: </label>
-            <input type="datetime-local" v-model="eventData.start" id="fechaInput">
-            <label for="">Fin: </label>
-            <input type="datetime-local" v-model="eventData.end">
+            <label for="">Descripcion:
+                <input v-model="eventData.description" placeholder="Descripción">
+            </label>
+            <label for="">Inicio:
+                <input type="datetime-local" v-model="eventData.start" id="fechaInput">
+            </label>
+            <label for="">Fin:
+                <input type="datetime-local" v-model="eventData.end">
+            </label>
             <div class="btn-container">
                 <button @click="$emit('update', eventData)">Guardar</button>
                 <button @click="$emit('delete', eventData.value)">Eliminar</button>
@@ -84,7 +87,7 @@ function formatDate(date) {
 
 .modal-box {
     background-color: rgb(33, 42, 54);
-    padding: 2rem;
+    padding: 2rem 5rem;
     margin: 10%;
     border-radius: 15px;
     display: flex;
@@ -143,7 +146,5 @@ function formatDate(date) {
     flex-direction: column;
     color: white;
     font-size: .75rem;
-
-    align-items: end;
 }
 </style>
