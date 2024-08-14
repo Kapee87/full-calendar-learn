@@ -1,21 +1,21 @@
 <template>
     <div class="modal">
         <div class="modal-box">
-            <label for="">Nombre:
-                <input v-model="eventData.title" placeholder="Título del evento">
+            <label for="event-title">Nombre:
+                <input id="event-title" v-model="eventData.title" placeholder="Título del evento">
             </label>
-            <label for="">Descripcion:
-                <input v-model="eventData.description" placeholder="Descripción">
+            <label for="event-description">Descripción:
+                <input id="event-description" v-model="eventData.description" placeholder="Descripción">
             </label>
-            <label for="">Inicio:
-                <input type="datetime-local" v-model="eventData.start" id="fechaInput">
+            <label for="event-start">Inicio:
+                <input id="event-start" type="datetime-local" v-model="eventData.start">
             </label>
-            <label for="">Fin:
-                <input type="datetime-local" v-model="eventData.end">
+            <label for="event-end">Fin:
+                <input id="event-end" type="datetime-local" v-model="eventData.end">
             </label>
             <div class="btn-container">
                 <button @click="$emit('update', eventData)">Guardar</button>
-                <button @click="$emit('delete', eventData.value)">Eliminar</button>
+                <button @click="$emit('delete', eventData._id)">Eliminar</button>
                 <button @click="$emit('cancel')" id="cancelBtn">❌</button>
             </div>
         </div>
@@ -32,40 +32,34 @@ const props = defineProps({
     },
     modalProp: {
         type: Boolean,
-        isReadOnly: false
+        default: false
     }
-});
+})
 
-
-const eventId = props.eventInfo.extendedProps._id
-const eventTitle = ref(props.eventInfo.title);
-const eventDescription = ref(props.eventInfo.description);
-const eventStart = ref(formatDate(props.eventInfo.start));
-const eventEnd = ref(formatDate(props.eventInfo.end));
-const eventData = ref({
-    _id: eventId,
-    title: eventTitle.value,
-    description: eventDescription.value,
-    start: eventStart.value,
-    end: eventEnd.value
-});
-
-
-
-function formatDate(date) {
-    if (!date) return
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    const
-        hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-
+/**
+ * Formatea una fecha para el input datetime-local
+ * @param {Date} date - Fecha a formatear
+ * @returns {string} Fecha formateada
+ */
+const formatDate = (date) => {
+    if (!date) return ''
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
+const eventData = ref({
+    _id: props.eventInfo.extendedProps._id,
+    title: props.eventInfo.title,
+    description: props.eventInfo.description,
+    start: formatDate(props.eventInfo.start),
+    end: formatDate(props.eventInfo.end)
+})
 </script>
+
 <style scoped>
 .modal {
     position: fixed;
@@ -88,7 +82,7 @@ function formatDate(date) {
 .modal-box {
     background-color: rgb(33, 42, 54);
     padding: 2rem 5rem;
-    margin: 10%;
+    margin: 12%;
     border-radius: 15px;
     display: flex;
     flex-wrap: wrap;
@@ -146,5 +140,11 @@ function formatDate(date) {
     flex-direction: column;
     color: white;
     font-size: .75rem;
+}
+
+.modal-box input {
+    border-radius: 10px;
+    border: none;
+    padding: .5rem;
 }
 </style>

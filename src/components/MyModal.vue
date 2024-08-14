@@ -1,14 +1,14 @@
 <template>
     <div class="modal">
         <div class="modal-box">
-            <input v-model="eventTitle" placeholder="Título del evento">
-            <label for="">
-                <input v-model="eventDescription" placeholder="Descripción">
+            <input v-model="eventTitle" placeholder="Título del evento" id="eventTitle">
+            <label for="eventDescription">
+                <input v-model="eventDescription" id="eventDescription" placeholder="Descripción">
                 opcional
             </label>
             <input type="datetime-local" v-model="eventStart" id="fechaInput">
-            <label>
-                <input type="datetime-local" v-model="eventEnd">
+            <label for="eventEndDate">
+                <input type="datetime-local" id="eventEndDate" v-model="eventEnd">
                 opcional
             </label>
             <div>
@@ -77,8 +77,9 @@ function formatDate(date) {
     margin: 10%;
     border-radius: 15px;
     display: flex;
-    gap: 1rem;
     flex-wrap: wrap;
+
+    gap: 1rem;
 }
 
 .modal-box div {
@@ -118,5 +119,11 @@ function formatDate(date) {
     font-size: .75rem;
 
     align-items: end;
+}
+
+.modal-box input {
+    border-radius: 10px;
+    border: none;
+    padding: .5rem;
 }
 </style>

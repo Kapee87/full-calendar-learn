@@ -2,143 +2,150 @@
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import TimegridPlugin from '@fullcalendar/timegrid'
-import InteractionPlugin, { Draggable } from '@fullcalendar/interaction'
+import InteractionPlugin from '@fullcalendar/interaction'
 import ListPlugin from '@fullcalendar/list'
-import { ref, computed, watch } from 'vue'
-import MyModal from './MyModal.vue';
-/* @ts-ignore */
+import { ref, computed } from 'vue'
+import MyModal from './MyModal.vue'
 import EventDetails from './EventDetails.vue'
 import axios from 'axios'
 
-const events = ref([])
+// URL de la API para los eventos
 const apiEventsUrl = 'http://localhost:3000/events/'
 
-const axiosEvents = async () => {
+// Referencias reactivas
+const events = ref([])
+const showModal = ref(false)
+const showEventModal = ref(false)
+const selectedDate = ref(null)
+const selectedEvent = ref(null)
+
+/**
+ * Obtiene los eventos desde la API
+ */
+const fetchEvents = async () => {
     try {
-        const response = await axios(apiEventsUrl)
+        const response = await axios.get(apiEventsUrl)
         events.value = response.data
     } catch (error) {
-        console.error(error);
+        console.error('Error al obtener eventos:', error)
     }
 }
-axiosEvents()
 
-const showModal = ref(false);
-const showEventModal = ref(false);
-const selectedDate = ref(null);
-const selectedEvent = ref(null);
+// Cargar eventos al iniciar el componente
+fetchEvents()
 
-
-// Función para determinar el color del evento
+/**
+ * Determina el color del evento basado en su fecha de inicio
+ * @param {string} startDate - Fecha de inicio del evento
+ * @returns {string} Color del evento
+ */
 const eventColorCheck = (startDate) => {
     const startDateFormatted = new Date(startDate)
-    console.log(Date.now() > startDateFormatted.getTime());
-    if (Date.now() > startDateFormatted.getTime()) {
-        return 'red'; // Evento pasado
-    } else if (new Date().getDate() === new Date(startDate).getDate()) {
-        return 'orange'; // Evento hoy
+    const now = new Date()
+    if (now > startDateFormatted) {
+        return '#F34205' // Evento pasado
+    } else if (now.toDateString() === startDateFormatted.toDateString()) {
+        return '#F37C05' // Evento hoy
     } else {
-        return 'blue'; // Evento futuro
+        return '#05F354' // Evento futuro
     }
 }
 
-const handleEventClick = (info) => {
-    selectedEvent.value = info.event
-    showEventModal.value = true
-};
+// /**
+//  * Maneja el clic en un evento
+//  * @param {Object} info - Información del evento clickeado
+//  */
+// const handleEventClick = (info) => {
+//     selectedEvent.value = info.event
+//     showEventModal.value = true
+// }
 
+/**
+ * Guarda un nuevo evento
+ * @param {Object} eventData - Datos del nuevo evento
+ */
 const saveEventLocal = async (eventData) => {
-    if (eventData.title.length > 3 && eventData.start !== null) {
+    if (eventData.title.length > 3 && eventData.start) {
         try {
-            const response = await axios.post(apiEventsUrl, {
-                title: eventData.title,
-                description: eventData.description,
-                start: eventData.start,
-                end: eventData.end
-            })
-            events.value.push(response.data);
-            showModal.value = false;
+            const response = await axios.post(apiEventsUrl, eventData)
+            events.value.push(response.data)
+            showModal.value = false
         } catch (error) {
-            console.error(error)
+            console.error('Error al guardar evento:', error)
         }
     } else {
         alert("Debe completar todos los campos")
     }
-};
+}
 
+/**
+ * Actualiza un evento existente
+ * @param {Object} eventData - Datos actualizados del evento
+ */
 const updateEventLocal = async (eventData) => {
     const eventId = selectedEvent.value._def.extendedProps._id
-    const newEvents = [...events.value]; // Crear una copia del array
-    const index = newEvents.findIndex(event => event._id === eventId);
+    const index = events.value.findIndex(event => event._id === eventId)
 
-    if (eventData.title.length > 3 && eventData.start !== null) {
-        if (index !== -1) {
-            // Actualizar las propiedades del evento existente
-            newEvents[index].title = eventData.title;
-            newEvents[index].description = eventData.description;
-            newEvents[index].start = eventData.start;
-            newEvents[index].end = eventData.end;
-            console.log(newEvents[index]);
-
-            const response = await axios.put(apiEventsUrl + eventId)
-            console.log(response.data);
-
-
-            // Asignar el nuevo array al valor reactivo
-            events.value = newEvents;
-
-            handleCancelModal();
-            console.log(events.value);
-        } else {
-            // Manejar el caso en el que el evento no se encontró
-            console.error('Evento no encontrado');
-        }
-    } else {
-        alert("Debe completar todos los campos");
-    }
-};
-const deleteEventLocal = async () => {
-
-    if (confirm('¿Estás seguro?')) {
-        const newEvents = [...events.value]; // Crear una copia del array
-        const index = newEvents.findIndex(event => event._id === selectedEvent.value._def.extendedProps._id);
-
+    if (eventData.title.length > 3 && eventData.start) {
         if (index !== -1) {
             try {
-                const response = await axios.delete(apiEventsUrl + selectedEvent.value._def.extendedProps._id)
-                console.log(response.data);
-
-                newEvents.splice(index, 1);
-                events.value = newEvents; // Asignar el nuevo array al valor reactivo
+                await axios.put(`${apiEventsUrl}${eventId}`, eventData)
+                events.value[index] = { ...events.value[index], ...eventData }
                 handleCancelModal()
             } catch (error) {
-                alert('Hubo un error al eliminar el evento')
+                console.error('Error al actualizar evento:', error)
             }
+        } else {
+            console.error('Evento no encontrado')
         }
     } else {
-        alert("Eliminación cancelada")
-        console.log("Eliminación cancelada");
+        alert("Debe completar todos los campos")
     }
-};
+}
+
+/**
+ * Elimina un evento
+ */
+const deleteEventLocal = async () => {
+    if (confirm('¿Estás seguro?')) {
+        const eventId = selectedEvent.value._def.extendedProps._id
+        try {
+            await axios.delete(`${apiEventsUrl}${eventId}`)
+            events.value = events.value.filter(event => event._id !== eventId)
+            handleCancelModal()
+        } catch (error) {
+            alert('Hubo un error al eliminar el evento')
+        }
+    }
+}
+
+/**
+ * Cierra los modales
+ */
 const handleCancelModal = () => {
     showModal.value = false
     showEventModal.value = false
 }
+
+/**
+ * Opciones del calendario
+ */
 const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, TimegridPlugin, InteractionPlugin, ListPlugin],
     initialView: 'dayGridMonth',
     weekends: true,
-    /* initialEvents: events.value.map(event => {
-        event.color = eventColorCheck(event.start);
-        return event;
-    }), */
-    initialEvents: events.value,
     locale: 'es-ES',
     selectable: true,
     editable: false,
-    eventClick: handleEventClick,
+    eventClick: (info) => {
+        selectedEvent.value = info.event
+        showEventModal.value = true
+    },
     eventColor: '#378006',
-    events: events.value,
+    events: events.value.map(event => ({
+        ...event,
+        color: eventColorCheck(event.start)
+    })),
     headerToolbar: {
         left: "title",
         right: "prev today next",
@@ -154,17 +161,14 @@ const calendarOptions = computed(() => ({
     },
     height: "80vh",
     dateClick: (info) => {
-
         if (info.view.type === 'dayGridMonth') {
-            // console.log('es vista de mes ');
-            info.view.calendar.changeView('timeGridDay', info.dateStr);
+            info.view.calendar.changeView('timeGridDay', info.dateStr)
         } else {
-            selectedDate.value = info;
-            showModal.value = true; // Set showModal after setting selectedDate
+            selectedDate.value = info
+            showModal.value = true
         }
     }
 }))
-
 </script>
 
 <template>
@@ -176,42 +180,55 @@ const calendarOptions = computed(() => ({
         @update="updateEventLocal" @delete="deleteEventLocal" @cancel="handleCancelModal" />
 </template>
 
-<style scoped>
+<style>
 h1 {
     font-style: italic;
     text-decoration: underline;
 }
-</style>
 
+.fc-toolbar-chunk {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+}
 
+/* Estilos generales para los botones */
+.fc-button-primary {
+    background-color: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    color: white !important;
+}
 
+/* Estilos para el botón activo */
+.fc-button-active {
+    background-color: #45a049 !important;
+    border-color: #45a049 !important;
+}
 
-<!-- 
-[
-    {
-        id: "001",
-        title: 'Evento Actual',
-        start: new Date(Date.now() + 3600000),
-        end: new Date(Date.now() + 259200000),
-    },
-    {
-        id: "002",
-        title: 'Evento Vencido',
-        start: new Date(Date.now() - 259200000),
-        end: new Date(Date.now() - 209200000),
-    },
-    {
-        id: "003",
-        title: 'Evento Futuro',
-        start: new Date(Date.now() + 209200000),
-        end: new Date(Date.now() + 259200000),
-    },
-    {
-        id: "004",
-        title: 'Evento individual',
-        start: new Date(Date.now() + 259200000 + 259200000),
-        end: '',
+/* Estilos para el hover de los botones */
+.fc-button-primary:hover {
+    background-color: #45a049 !important;
+    border-color: #45a049 !important;
+}
+
+/* Estilos para el botón 'hoy' */
+.fc-today-button {
+    font-weight: bold !important;
+}
+
+/* Estilos para los botones de navegación (anterior y siguiente) */
+.fc-prev-button,
+.fc-next-button {
+    padding: 4px 8px !important;
+}
+
+@media screen and (max-width:768px) {
+    .fc-toolbar-chunk {
+        flex-direction: column;
+        justify-content: baseline !important;
+        align-items: baseline;
+        gap: .2rem;
     }
-
-]
- -->
+}
+</style>
