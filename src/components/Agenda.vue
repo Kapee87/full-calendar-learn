@@ -172,18 +172,138 @@ const calendarOptions = computed(() => ({
 </script>
 
 <template>
-    <h1>Agenda</h1>
-    <FullCalendar :options="calendarOptions" />
-    <MyModal v-if="showModal" :eventInfo="selectedDate" :modalProp="showModal" @save="saveEventLocal"
-        @cancel="handleCancelModal" />
-    <EventDetails v-if="showEventModal" :eventInfo="selectedEvent" :modalProp="showEventModal"
-        @update="updateEventLocal" @delete="deleteEventLocal" @cancel="handleCancelModal" />
+  <h1>Tu agenda personal</h1>
+  <FullCalendar :options="calendarOptions" />
+  <MyModal
+    v-if="showModal"
+    :eventInfo="selectedDate"
+    :modalProp="showModal"
+    @save="saveEventLocal"
+    @cancel="handleCancelModal"
+  />
+  <EventDetails
+    v-if="showEventModal"
+    :eventInfo="selectedEvent"
+    :modalProp="showEventModal"
+    @update="updateEventLocal"
+    @delete="deleteEventLocal"
+    @cancel="handleCancelModal"
+  />
 </template>
 
 <style>
 h1 {
-    font-style: italic;
-    text-decoration: underline;
+  font-weight: 300;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  letter-spacing: 1.5px;
+}
+
+:deep(.fc) {
+  --fc-border-color: #dfe4ea;
+  --fc-button-text-color: #ffffff;
+  --fc-button-bg-color: #1abc9c;
+  --fc-button-border-color: #1abc9c;
+  --fc-button-hover-bg-color: #16a085;
+  --fc-button-hover-border-color: #16a085;
+  --fc-button-active-bg-color: #16a085;
+  --fc-button-active-border-color: #16a085;
+}
+
+:deep(.fc-toolbar-title) {
+  font-size: 2rem !important;
+  font-weight: 400;
+  color: #2c3e50;
+}
+
+:deep(.fc-button) {
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.7em 1.2em;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Asegura que el padding no afecte el tamaño del botón */
+  display: inline-block; /* Mantén el botón como un bloque inline para evitar que se divida */
+}
+
+:deep(.fc-button:hover) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+:deep(.fc-day-today) {
+  background-color: rgba(26, 188, 156, 0.1) !important;
+}
+
+:deep(.fc-event) {
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9em;
+  padding: 3px 5px;
+  transition: all 0.2s ease;
+}
+
+:deep(.fc-event:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.fc-event-past) {
+  background-color: #95a5a6 !important;
+}
+
+:deep(.fc-event-today) {
+  background-color: #f39c12 !important;
+}
+
+:deep(.fc-event-future) {
+  background-color: #27ae60 !important;
+}
+
+:deep(.fc-day-header) {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #7f8c8d;
+}
+
+:deep(.fc-list-event) {
+  background-color: transparent !important;
+}
+
+:deep(.fc-list-event-dot) {
+  border-color: #1abc9c !important;
+}
+
+:deep(.fc-list-day-cushion) {
+  background-color: #f1f2f6 !important;
+}
+
+:deep(.fc-timegrid-slot-label) {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  :deep(.fc-toolbar) {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  :deep(.fc-toolbar-title) {
+    font-size: 1.6rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  :deep(.fc-button) {
+    margin: 0.3em 0;
+  }
 }
 
 .fc-toolbar-chunk {
