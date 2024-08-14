@@ -3,13 +3,16 @@
         <div class="modal-box">
             <label for="">Nombre: </label>
             <input v-model="eventTitle" placeholder="Título del evento">
+            <label for="">Descripcion:
+            </label>
+            <input v-model="eventDescription" placeholder="Descripción">
             <label for="">Inicio: </label>
             <input type="datetime-local" v-model="eventStart" id="fechaInput">
             <label for="">Fin: </label>
-            <input type="datetime-local" v-model="eventStart" id="fechaInput">
+            <input type="datetime-local" v-model="eventEnd">
             <div class="btn-container">
-                <button @click="$emit('update', { title: eventTitle, start: eventStart })">Guardar</button>
-                <button @click="$emit('delete', { title: eventTitle, start: eventStart })">Eliminar</button>
+                <button @click="$emit('update', eventData.val)">Guardar</button>
+                <button @click="$emit('delete', eventData.val)">Eliminar</button>
                 <button @click="$emit('cancel')" id="cancelBtn">❌</button>
             </div>
         </div>
@@ -29,13 +32,25 @@ const props = defineProps({
         isReadOnly: false
     }
 });
-console.log(props.eventInfo.start);
 
 
+const eventId = props.eventInfo.extendedProps._id
 const eventTitle = ref(props.eventInfo.title);
+const eventDescription = ref(props.eventInfo.description);
 const eventStart = ref(formatDate(props.eventInfo.start));
+const eventEnd = ref(formatDate(props.eventInfo.end));
+const eventData = ref({
+    _id: eventId,
+    title: eventTitle.value,
+    description: eventDescription.value,
+    start: eventStart.value,
+    end: eventEnd.value
+});
+
+
 
 function formatDate(date) {
+    if (!date) return
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
     const day = String(date.getDate()).padStart(2, '0');
@@ -70,6 +85,7 @@ function formatDate(date) {
 .modal-box {
     background-color: rgb(33, 42, 54);
     padding: 2rem;
+    margin: 10%;
     border-radius: 15px;
     display: flex;
     flex-wrap: wrap;
@@ -111,5 +127,23 @@ function formatDate(date) {
     top: .5rem;
     right: 1rem;
     transform: scale(.8);
+}
+
+.modal-box div {
+    width: 100%;
+    padding: .5rem;
+    border-top: solid .4px gray;
+    display: flex;
+    gap: 1rem;
+    justify-content: end;
+}
+
+.modal-box label {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-size: .75rem;
+
+    align-items: end;
 }
 </style>

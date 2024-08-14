@@ -2,9 +2,20 @@
     <div class="modal">
         <div class="modal-box">
             <input v-model="eventTitle" placeholder="Título del evento">
+            <label for="">
+                <input v-model="eventDescription" placeholder="Descripción">
+                opcional
+            </label>
             <input type="datetime-local" v-model="eventStart" id="fechaInput">
-            <button @click="$emit('save', { title: eventTitle, start: eventStart })">Guardar</button>
-            <button @click="$emit('cancel')">❌</button>
+            <label>
+                <input type="datetime-local" v-model="eventEnd">
+                opcional
+            </label>
+            <div>
+                <button
+                    @click="$emit('save', { title: eventTitle, start: eventStart, description: eventDescription, end: eventEnd })">Guardar</button>
+                <button @click="$emit('cancel')">❌</button>
+            </div>
         </div>
     </div>
 </template>
@@ -24,6 +35,8 @@ const props = defineProps({
 });
 
 const eventTitle = ref('');
+const eventDescription = ref('');
+const eventEnd = ref('');
 const eventStart = ref(formatDate(props.eventInfo.date));
 
 function formatDate(date) {
@@ -61,9 +74,20 @@ function formatDate(date) {
 .modal-box {
     background-color: rgb(33, 42, 54);
     padding: 2rem;
+    margin: 10%;
     border-radius: 15px;
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.modal-box div {
+    width: 100%;
+    padding: .5rem;
+    border-top: solid .4px gray;
+    display: flex;
+    gap: 1rem;
+    justify-content: end;
 }
 
 .modal-box button {
@@ -85,6 +109,14 @@ function formatDate(date) {
 
 .modal-box button:active {
     box-shadow: none;
+}
 
+.modal-box label {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-size: .75rem;
+
+    align-items: end;
 }
 </style>

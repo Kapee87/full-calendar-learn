@@ -11,17 +11,18 @@ import EventDetails from './EventDetails.vue'
 import axios from 'axios'
 
 const events = ref([])
-const apiUrl = 'http://localhost:3000'
+const apiEventsUrl = 'http://localhost:3000/events'
 
 const axiosEvents = async () => {
     try {
-        const response = await axios(apiUrl + '/events')
+        const response = await axios(apiEventsUrl)
         events.value = response.data
     } catch (error) {
         console.error(error);
     }
 }
 axiosEvents()
+
 const showModal = ref(false);
 const showEventModal = ref(false);
 const selectedDate = ref(null);
@@ -41,31 +42,25 @@ const eventColorCheck = (startDate) => {
     }
 }
 
-// Función para actualizar los eventos con el color correspondiente
-/* const updateEventColors = (events) => {
-    events.forEach(event => {
-        event.color = eventColorCheck(event.start);
-    });
-}; */
-
-
-
 const handleEventClick = (info) => {
     selectedEvent.value = info.event
     showEventModal.value = true
 };
 
-const saveEventLocal = (eventData) => {
+const saveEventLocal = async (eventData) => {
     if (eventData.title.length > 3 && eventData.start !== null) {
-        // Aquí agregarías el nuevo evento a tu lista de eventos y lo guardarías en la base de datos si es necesariLocalo
-        events.value.push({
-            title: eventData.title,
-            start: eventData.start,
-            id: String(Date())
-            // ... otras propiedades
-        });
-        showModal.value = false;
-        console.log(events.value)
+        try {
+            const response = await axios.post(apiEventsUrl, {
+                title: eventData.title,
+                description: eventData.description,
+                start: eventData.start,
+                end: eventData.end
+            })
+            events.value.push(response.data);
+            showModal.value = false;
+        } catch (error) {
+            console.error(error)
+        }
     } else {
         alert("Debe completar todos los campos")
     }
@@ -73,7 +68,7 @@ const saveEventLocal = (eventData) => {
 
 const updateEventLocal = (eventData) => {
     const newEvents = [...events.value]; // Crear una copia del array
-    const index = newEvents.findIndex(event => event.id === selectedEvent.value.id);
+    const index = newEvents.findIndex(event => event._id === selectedEvent.value._def.extendedProps._id);
 
     if (eventData.title.length > 3 && eventData.start !== null) {
         if (index !== -1) {
@@ -95,14 +90,23 @@ const updateEventLocal = (eventData) => {
         alert("Debe completar todos los campos");
     }
 };
-const deleteEventLocal = () => {
+const deleteEventLocal = async () => {
+
     if (confirm('¿Estás seguro?')) {
         const newEvents = [...events.value]; // Crear una copia del array
-        const index = newEvents.findIndex(event => event.id === selectedEvent.value.id);
+        const index = newEvents.findIndex(event => event._id === selectedEvent.value._def.extendedProps._id);
+
         if (index !== -1) {
-            newEvents.splice(index, 1);
-            events.value = newEvents; // Asignar el nuevo array al valor reactivo
-            handleCancelModal()
+            try {
+                const response = await axios.delete(apiEventsUrl + '/' + selectedEvent.value._def.extendedProps._id)
+                console.log(response.data);
+
+                newEvents.splice(index, 1);
+                events.value = newEvents; // Asignar el nuevo array al valor reactivo
+                handleCancelModal()
+            } catch (error) {
+                alert('Hubo un error al eliminar el evento')
+            }
         }
     } else {
         alert("Eliminación cancelada")
@@ -151,48 +155,8 @@ const calendarOptions = computed(() => ({
             selectedDate.value = info;
             showModal.value = true; // Set showModal after setting selectedDate
         }
-    },
-    /*  eventAdd: (info) => {
-         createEvent(info.event)
-     },
-     eventDrop: (info) => {
-         updateEvent(info.event)
-     },
-     eventResize: (info) => {
-         updateEvent(info.event)
-     },
-     eventRemove: (info) => {
-         deleteEvent(info.event.id)
-     } */
-}))
-
-// Simulación de las funciones de la API
-/* 
-
-function createEvent(event) {
-    // Aquí iría la lógica para enviar el evento a la API
-    // Por ahora, simplemente agregamos el evento al arreglo local
-    event.id = Date.now() // Asigna un ID único
-    events.value.push(event)
-}
-
-function updateEvent(event) {
-    // Aquí iría la lógica para actualizar el evento en la API
-    // Por ahora, simplemente actualizamos el evento en el arreglo local
-    const index = events.value.findIndex(e => e.id === event.id)
-    if (index !== -1) {
-        events.value[index] = event
     }
-}
-
-function deleteEvent(eventId) {
-    // Aquí iría la lógica para eliminar el evento de la API
-    // Por ahora, simplemente eliminamos el evento del arreglo local
-    events.value = events.value.filter(e => e.id !== eventId)
-}
-*/
-
-
+}))
 
 </script>
 
