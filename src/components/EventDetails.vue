@@ -2,17 +2,17 @@
     <div class="modal">
         <div class="modal-box">
             <label for="">Nombre: </label>
-            <input v-model="eventTitle" placeholder="Título del evento">
+            <input v-model="eventData.title" placeholder="Título del evento">
             <label for="">Descripcion:
             </label>
-            <input v-model="eventDescription" placeholder="Descripción">
+            <input v-model="eventData.description" placeholder="Descripción">
             <label for="">Inicio: </label>
-            <input type="datetime-local" v-model="eventStart" id="fechaInput">
+            <input type="datetime-local" v-model="eventData.start" id="fechaInput">
             <label for="">Fin: </label>
-            <input type="datetime-local" v-model="eventEnd">
+            <input type="datetime-local" v-model="eventData.end">
             <div class="btn-container">
-                <button @click="$emit('update', eventData.val)">Guardar</button>
-                <button @click="$emit('delete', eventData.val)">Eliminar</button>
+                <button @click="$emit('update', eventData)">Guardar</button>
+                <button @click="$emit('delete', eventData.value)">Eliminar</button>
                 <button @click="$emit('cancel')" id="cancelBtn">❌</button>
             </div>
         </div>

@@ -11,7 +11,7 @@ import EventDetails from './EventDetails.vue'
 import axios from 'axios'
 
 const events = ref([])
-const apiEventsUrl = 'http://localhost:3000/events'
+const apiEventsUrl = 'http://localhost:3000/events/'
 
 const axiosEvents = async () => {
     try {
@@ -66,16 +66,23 @@ const saveEventLocal = async (eventData) => {
     }
 };
 
-const updateEventLocal = (eventData) => {
+const updateEventLocal = async (eventData) => {
+    const eventId = selectedEvent.value._def.extendedProps._id
     const newEvents = [...events.value]; // Crear una copia del array
-    const index = newEvents.findIndex(event => event._id === selectedEvent.value._def.extendedProps._id);
+    const index = newEvents.findIndex(event => event._id === eventId);
 
     if (eventData.title.length > 3 && eventData.start !== null) {
         if (index !== -1) {
             // Actualizar las propiedades del evento existente
             newEvents[index].title = eventData.title;
+            newEvents[index].description = eventData.description;
             newEvents[index].start = eventData.start;
-            // ... actualizar otras propiedades
+            newEvents[index].end = eventData.end;
+            console.log(newEvents[index]);
+
+            const response = await axios.put(apiEventsUrl + eventId)
+            console.log(response.data);
+
 
             // Asignar el nuevo array al valor reactivo
             events.value = newEvents;
@@ -98,7 +105,7 @@ const deleteEventLocal = async () => {
 
         if (index !== -1) {
             try {
-                const response = await axios.delete(apiEventsUrl + '/' + selectedEvent.value._def.extendedProps._id)
+                const response = await axios.delete(apiEventsUrl + selectedEvent.value._def.extendedProps._id)
                 console.log(response.data);
 
                 newEvents.splice(index, 1);
