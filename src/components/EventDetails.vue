@@ -75,9 +75,8 @@ const eventData = ref({
 }
 
 .modal-box {
-    background-color: rgb(33, 42, 54);
-    padding: 2rem 5rem;
-    margin: 12%;
+    background-color: #2c3e50;
+    padding: 2.5rem;
     border-radius: 15px;
     display: flex;
     flex-direction: column;
@@ -156,27 +155,5 @@ const eventData = ref({
 
 #cancelBtn:hover {
     color: #e74c3c;
-}
-
-.modal-box div {
-    width: 100%;
-    padding: .5rem;
-    border-top: solid .4px gray;
-    display: flex;
-    gap: 1rem;
-    justify-content: end;
-}
-
-.modal-box label {
-    display: flex;
-    flex-direction: column;
-    color: white;
-    font-size: .75rem;
-}
-
-.modal-box input {
-    border-radius: 10px;
-    border: none;
-    padding: .5rem;
 }
 </style>

@@ -70,11 +70,9 @@ function formatDate(date) {
 .modal-box {
     background-color: #2c3e50;
     padding: 2rem;
-    margin: 10%;
     border-radius: 15px;
     display: flex;
-    flex-wrap: wrap;
-
+    flex-direction: column;
     gap: 1rem;
     max-width: 350px;
     width: 90%;
@@ -99,15 +97,6 @@ function formatDate(date) {
 
 .modal-box input::placeholder {
     color: #95a5a6;
-}
-
-.modal-box div {
-    width: 100%;
-    padding: .5rem;
-    border-top: solid .4px gray;
-    display: flex;
-    gap: 1rem;
-    justify-content: end;
 }
 
 .modal-box button {
@@ -140,18 +129,14 @@ function formatDate(date) {
     box-shadow: none;
 }
 
-.modal-box label {
-    display: flex;
-    flex-direction: column;
-    color: white;
-    font-size: .75rem;
-
-    align-items: end;
-}
-
-.modal-box input {
-    border-radius: 10px;
-    border: none;
-    padding: .5rem;
+/* Estilo específico para el input de tipo datetime-local */
+input[type="datetime-local"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ecf0f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 20px;
+    padding-right: 40px;
 }
 </style>
