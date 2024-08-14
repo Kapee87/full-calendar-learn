@@ -1,247 +1,319 @@
-<script setup>
-import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import TimegridPlugin from '@fullcalendar/timegrid'
-import InteractionPlugin, { Draggable } from '@fullcalendar/interaction'
-import ListPlugin from '@fullcalendar/list'
-import { ref, computed, watch } from 'vue'
-import MyModal from './MyModal.vue';
-/* @ts-ignore */
-import EventDetails from './EventDetails.vue'
-import axios from 'axios'
-
-const events = ref([])
-
-const axiosEvents = async () => {
-    try {
-        const response = await axios('http://localhost:3000/events')
-        console.log(response);
-        events.value = response.data
-        console.log(events.value);
-    } catch (error) {
-        console.error(error);
-    }
-}
-axiosEvents()
-const showModal = ref(false);
-const showEventModal = ref(false);
-const selectedDate = ref(null);
-const selectedEvent = ref(null);
-
-
-// Función para determinar el color del evento
-const eventColorCheck = (startDate) => {
-    const startDateFormatted = new Date(startDate)
-    console.log(Date.now() > startDateFormatted.getTime());
-    if (Date.now() > startDateFormatted.getTime()) {
-        return 'red'; // Evento pasado
-    } else if (new Date().getDate() === new Date(startDate).getDate()) {
-        return 'orange'; // Evento hoy
-    } else {
-        return 'blue'; // Evento futuro
-    }
-}
-
-// Función para actualizar los eventos con el color correspondiente
-/* const updateEventColors = (events) => {
-    events.forEach(event => {
-        event.color = eventColorCheck(event.start);
-    });
-}; */
-
-
-
-const handleEventClick = (info) => {
-    selectedEvent.value = info.event
-    showEventModal.value = true
-};
-
-const saveEventLocal = (eventData) => {
-    if (eventData.title.length > 3 && eventData.start !== null) {
-        // Aquí agregarías el nuevo evento a tu lista de eventos y lo guardarías en la base de datos si es necesariLocalo
-        events.value.push({
-            title: eventData.title,
-            start: eventData.start,
-            id: String(Date())
-            // ... otras propiedades
-        });
-        showModal.value = false;
-        console.log(events.value)
-    } else {
-        alert("Debe completar todos los campos")
-    }
-};
-
-const updateEventLocal = (eventData) => {
-    const newEvents = [...events.value]; // Crear una copia del array
-    const index = newEvents.findIndex(event => event.id === selectedEvent.value.id);
-
-    if (eventData.title.length > 3 && eventData.start !== null) {
-        if (index !== -1) {
-            // Actualizar las propiedades del evento existente
-            newEvents[index].title = eventData.title;
-            newEvents[index].start = eventData.start;
-            // ... actualizar otras propiedades
-
-            // Asignar el nuevo array al valor reactivo
-            events.value = newEvents;
-
-            handleCancelModal();
-            console.log(events.value);
-        } else {
-            // Manejar el caso en el que el evento no se encontró
-            console.error('Evento no encontrado');
-        }
-    } else {
-        alert("Debe completar todos los campos");
-    }
-};
-const deleteEventLocal = () => {
-    if (confirm('¿Estás seguro?')) {
-        const newEvents = [...events.value]; // Crear una copia del array
-        const index = newEvents.findIndex(event => event.id === selectedEvent.value.id);
-        if (index !== -1) {
-            newEvents.splice(index, 1);
-            events.value = newEvents; // Asignar el nuevo array al valor reactivo
-            handleCancelModal()
-        }
-    } else {
-        alert("Eliminación cancelada")
-        console.log("Eliminación cancelada");
-    }
-};
-const handleCancelModal = () => {
-    showModal.value = false
-    showEventModal.value = false
-}
-const calendarOptions = computed(() => ({
-    plugins: [dayGridPlugin, TimegridPlugin, InteractionPlugin, ListPlugin],
-    initialView: 'dayGridMonth',
-    weekends: true,
-    /* initialEvents: events.value.map(event => {
-        event.color = eventColorCheck(event.start);
-        return event;
-    }), */
-    initialEvents: events.value,
-    locale: 'es-ES',
-    selectable: true,
-    editable: false,
-    eventClick: handleEventClick,
-    eventColor: '#378006',
-    events: events.value,
-    headerToolbar: {
-        left: "title",
-        right: "prev today next",
-        center: "dayGridMonth, timeGridWeek, timeGridDay"
-    },
-    buttonText: {
-        today: "hoy",
-        prev: "anterior",
-        next: "siguiente",
-        day: "Día",
-        month: "Mes",
-        week: "Semana"
-    },
-    height: "80vh",
-    dateClick: (info) => {
-
-        if (info.view.type === 'dayGridMonth') {
-            // console.log('es vista de mes ');
-            info.view.calendar.changeView('timeGridDay', info.dateStr);
-        } else {
-            selectedDate.value = info;
-            showModal.value = true; // Set showModal after setting selectedDate
-        }
-    },
-    /*  eventAdd: (info) => {
-         createEvent(info.event)
-     },
-     eventDrop: (info) => {
-         updateEvent(info.event)
-     },
-     eventResize: (info) => {
-         updateEvent(info.event)
-     },
-     eventRemove: (info) => {
-         deleteEvent(info.event.id)
-     } */
-}))
-
-// Simulación de las funciones de la API
-/* 
-
-function createEvent(event) {
-    // Aquí iría la lógica para enviar el evento a la API
-    // Por ahora, simplemente agregamos el evento al arreglo local
-    event.id = Date.now() // Asigna un ID único
-    events.value.push(event)
-}
-
-function updateEvent(event) {
-    // Aquí iría la lógica para actualizar el evento en la API
-    // Por ahora, simplemente actualizamos el evento en el arreglo local
-    const index = events.value.findIndex(e => e.id === event.id)
-    if (index !== -1) {
-        events.value[index] = event
-    }
-}
-
-function deleteEvent(eventId) {
-    // Aquí iría la lógica para eliminar el evento de la API
-    // Por ahora, simplemente eliminamos el evento del arreglo local
-    events.value = events.value.filter(e => e.id !== eventId)
-}
-*/
-
-
-
-</script>
-
 <template>
-    <h1>Agenda</h1>
-    <FullCalendar :options="calendarOptions" />
-    <MyModal v-if="showModal" :eventInfo="selectedDate" :modalProp="showModal" @save="saveEventLocal"
-        @cancel="handleCancelModal" />
-    <EventDetails v-if="showEventModal" :eventInfo="selectedEvent" :modalProp="showEventModal"
-        @update="updateEventLocal" @delete="deleteEventLocal" @cancel="handleCancelModal" />
+  <h1>Tu agenda personal</h1>
+  <FullCalendar :options="calendarOptions" />
+  <MyModal
+    v-if="showModal"
+    :eventInfo="selectedDate"
+    :modalProp="showModal"
+    @save="saveEventLocal"
+    @cancel="handleCancelModal"
+  />
+  <EventDetails
+    v-if="showEventModal"
+    :eventInfo="selectedEvent"
+    :modalProp="showEventModal"
+    @update="updateEventLocal"
+    @delete="deleteEventLocal"
+    @cancel="handleCancelModal"
+  />
 </template>
 
+<script>
+import FullCalendar from "@fullcalendar/vue3";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import TimegridPlugin from "@fullcalendar/timegrid";
+import InteractionPlugin from "@fullcalendar/interaction";
+import ListPlugin from "@fullcalendar/list";
+import MyModal from "./MyModal.vue";
+import EventDetails from "./EventDetails.vue";
+import axios from "axios";
+
+export default {
+  components: {
+    FullCalendar,
+    MyModal,
+    EventDetails,
+  },
+  data() {
+    return {
+      events: [],
+      showModal: false,
+      showEventModal: false,
+      selectedDate: null,
+      selectedEvent: null,
+    };
+  },
+  computed: {
+    calendarOptions() {
+      return {
+        plugins: [dayGridPlugin, TimegridPlugin, InteractionPlugin, ListPlugin],
+        initialView: "dayGridMonth",
+        weekends: true,
+        initialEvents: this.events,
+        locale: "es-ES",
+        selectable: true,
+        editable: false,
+        eventClick: this.handleEventClick,
+        eventColor: "#378006",
+        events: this.events,
+        headerToolbar: {
+          left: "title",
+          right: "prev today next",
+          center: "dayGridMonth, timeGridWeek, timeGridDay",
+        },
+        buttonText: {
+          today: "hoy",
+          prev: "anterior",
+          next: "siguiente",
+          day: "Día",
+          month: "Mes",
+          week: "Semana",
+        },
+        height: "80vh",
+        dateClick: (info) => {
+          if (info.view.type === "dayGridMonth") {
+            info.view.calendar.changeView("timeGridDay", info.dateStr);
+          } else {
+            this.selectedDate = info;
+            this.showModal = true;
+          }
+        },
+      };
+    },
+  },
+  methods: {
+ 
+    async axiosEvents() {
+      try {
+        const response = await axios("http://localhost:3000/events");
+        console.log(response);
+        this.events = response.data;
+        console.log(this.events);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    eventColorCheck(startDate) {
+      const startDateFormatted = new Date(startDate);
+      if (Date.now() > startDateFormatted.getTime()) {
+        return "red"; // Evento pasado
+      } else if (new Date().getDate() === new Date(startDate).getDate()) {
+        return "orange"; // Evento hoy
+      } else {
+        return "blue"; // Evento futuro
+      }
+    },
+    handleEventClick(info) {
+      this.selectedEvent = info.event;
+      this.showEventModal = true;
+    },
+    async saveEventLocal(eventData) {
+      if (eventData.title.length > 3 && eventData.start !== null) {
+        const newEvent = {
+          title: eventData.title,
+          start: eventData.start,
+          id: String(Date()),
+        };
+        try {
+          const response = await axios.post(
+            "http://localhost:3000/events",
+            newEvent
+          );
+          newEvent.id = response.data.id;
+          this.events.push(newEvent);
+          this.showModal = false;
+        } catch (error) {
+          console.error(
+            "Error al guardar el evento en la base de datos:",
+            error
+          );
+        }
+      } else {
+        alert("Debe completar todos los campos");
+      }
+    },
+    async updateEventLocal(eventData) {
+      const newEvents = [...this.events];
+      const index = newEvents.findIndex(
+        (event) => event.id === this.selectedEvent.id
+      );
+
+      if (eventData.title.length > 3 && eventData.start !== null) {
+        if (index !== -1) {
+          try {
+            await axios.put(
+              `http://localhost:3000/events/${this.selectedEvent.id}`,
+              eventData
+            );
+            newEvents[index].title = eventData.title;
+            newEvents[index].start = eventData.start;
+            this.events = newEvents;
+            this.handleCancelModal();
+            console.log(this.events);
+          } catch (error) {
+            console.error(
+              "Error al actualizar el evento en la base de datos:",
+              error
+            );
+          }
+        } else {
+          console.error("Evento no encontrado");
+        }
+      } else {
+        alert("Debe completar todos los campos");
+      }
+    },
+    async deleteEventLocal() {
+      if (confirm("¿Estás seguro?")) {
+        const newEvents = [...this.events];
+        const index = newEvents.findIndex(
+          (event) => event.id === this.selectedEvent.id
+        );
+
+        try {
+          await axios.delete(
+            `http://localhost:3000/events/${this.selectedEvent.id}`
+          );
+          newEvents.splice(index, 1);
+          this.events = newEvents;
+          this.handleCancelModal();
+        } catch (error) {
+          console.error(
+            "Error al eliminar el evento en la base de datos:",
+            error
+          );
+        }
+      }
+    },
+    handleCancelModal() {
+      this.showModal = false;
+      this.showEventModal = false;
+    },
+  },
+  mounted() {
+    this.axiosEvents();
+  },
+};
+</script>
+
 <style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+* {
+  font-family: "Poppins", sans-serif;
+}
+
 h1 {
-    font-style: italic;
-    text-decoration: underline;
+  font-weight: 300;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  letter-spacing: 1.5px;
+}
+
+:deep(.fc) {
+  --fc-border-color: #dfe4ea;
+  --fc-button-text-color: #ffffff;
+  --fc-button-bg-color: #1abc9c;
+  --fc-button-border-color: #1abc9c;
+  --fc-button-hover-bg-color: #16a085;
+  --fc-button-hover-border-color: #16a085;
+  --fc-button-active-bg-color: #16a085;
+  --fc-button-active-border-color: #16a085;
+}
+
+:deep(.fc-toolbar-title) {
+  font-size: 2rem !important;
+  font-weight: 400;
+  color: #2c3e50;
+}
+
+:deep(.fc-button) {
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.7em 1.2em;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Asegura que el padding no afecte el tamaño del botón */
+  display: inline-block; /* Mantén el botón como un bloque inline para evitar que se divida */
+}
+
+:deep(.fc-button:hover) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+:deep(.fc-day-today) {
+  background-color: rgba(26, 188, 156, 0.1) !important;
+}
+
+:deep(.fc-event) {
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9em;
+  padding: 3px 5px;
+  transition: all 0.2s ease;
+}
+
+:deep(.fc-event:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.fc-event-past) {
+  background-color: #95a5a6 !important;
+}
+
+:deep(.fc-event-today) {
+  background-color: #f39c12 !important;
+}
+
+:deep(.fc-event-future) {
+  background-color: #27ae60 !important;
+}
+
+:deep(.fc-day-header) {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #7f8c8d;
+}
+
+:deep(.fc-list-event) {
+  background-color: transparent !important;
+}
+
+:deep(.fc-list-event-dot) {
+  border-color: #1abc9c !important;
+}
+
+:deep(.fc-list-day-cushion) {
+  background-color: #f1f2f6 !important;
+}
+
+:deep(.fc-timegrid-slot-label) {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  :deep(.fc-toolbar) {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  :deep(.fc-toolbar-title) {
+    font-size: 1.6rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  :deep(.fc-button) {
+    margin: 0.3em 0;
+  }
 }
 </style>
-
-
-
-
-<!-- 
-[
-    {
-        id: "001",
-        title: 'Evento Actual',
-        start: new Date(Date.now() + 3600000),
-        end: new Date(Date.now() + 259200000),
-    },
-    {
-        id: "002",
-        title: 'Evento Vencido',
-        start: new Date(Date.now() - 259200000),
-        end: new Date(Date.now() - 209200000),
-    },
-    {
-        id: "003",
-        title: 'Evento Futuro',
-        start: new Date(Date.now() + 209200000),
-        end: new Date(Date.now() + 259200000),
-    },
-    {
-        id: "004",
-        title: 'Evento individual',
-        start: new Date(Date.now() + 259200000 + 259200000),
-        end: '',
-    }
-
-]
- -->
